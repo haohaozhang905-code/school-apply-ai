@@ -98,7 +98,8 @@ function buildFields(params: {
   if (aiSuggestion !== undefined) fields['AI建议'] = aiSuggestion;
   if (token !== undefined) fields['Token'] = token;
   if (submittedAt) {
-    fields['提交时间'] = new Date(submittedAt).getTime();
+    // 飞书 datetime 以 UTC 展示，加 UTC+8 偏移使其显示北京时间
+    fields['提交时间'] = new Date(submittedAt).getTime() + 8 * 60 * 60 * 1000;
   }
 
   return fields;

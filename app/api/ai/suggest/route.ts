@@ -61,17 +61,18 @@ export async function POST(request: NextRequest) {
 
         controller.close();
 
-        // 流式结束后，并行更新 Supabase + 飞书 AI建议
+        // 流式结束后，await 确保写入完成（Vercel 不保证 fire-and-forget 执行）
         if (fullContent && submissionId) {
-          updateAISuggestion(submissionId, fullContent).catch((err) => {
-            console.error('[AI] Failed to update Supabase:', err);
-          });
-
-          if (token) {
-            updateLarkAISuggestion(token, fullContent).catch((err) => {
-              console.error('[Lark] Failed to update AI suggestion:', err);
-            });
-          }
+          await Promise.allSettled([
+            updateAISuggestion(submissionId, fullContent).catch((err) => {
+              console.error('[AI] Failed to update Supabase:', err);
+            }),
+            token
+              ? updateLarkAISuggestion(token, fullContent).catch((err) => {
+                  console.error('[Lark] Failed to update AI suggestion:', err);
+                })
+              : Promise.resolve(),
+          ]);
         }
       } catch (error: any) {
         console.error('[AI] Streaming error:', error);

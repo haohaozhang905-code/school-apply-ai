@@ -27,11 +27,9 @@ export async function POST(request: NextRequest) {
     // 标记 Token 为已使用
     await markTokenAsUsed(tokenId);
 
-    // 立即写入飞书（AI建议留空，后续更新）
+    // 立即写入飞书（完全后台，不等待，不影响响应速度）
     const submittedAt = submission.submitted_at || new Date().toISOString();
-    createLarkRecord({ formData, token, submittedAt }).catch((err) => {
-      console.error('[Lark] Create record failed:', err);
-    });
+    void createLarkRecord({ formData, token, submittedAt });
 
     return NextResponse.json({
       success: true,

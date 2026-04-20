@@ -70,19 +70,25 @@ export default function ApplyForm() {
           setTokenId(data.tokenId);
           setTokenStatus('valid');
         } else if (data.used && data.submission) {
-          // Token 已使用：直接展示历史 AI 建议
+          // Token 已使用
           setTokenId(data.tokenId);
           setTokenStatus('valid');
-          if (data.submission.ai_suggestion) {
-            setAiResult(data.submission.ai_suggestion);
-          }
           if (data.submission.form_language) {
             setLang(data.submission.form_language as Lang);
           }
           if (data.submission.metadata) {
             setHistoryFormData(data.submission.metadata as FormData);
           }
-          setStep(5);
+          if (data.submission.ai_suggestion) {
+            // AI 已生成：直接展示
+            setAiResult(data.submission.ai_suggestion);
+            setStep(5);
+          } else {
+            // AI 还未生成（提交后立刻刷新）：重新触发流式拉取
+            setSubmissionId(data.submission.id);
+            setStep(5);
+            fetchAIResult(data.submission.id, data.submission.metadata || {}, data.submission.form_language || 'zh');
+          }
         } else {
           setTokenStatus('invalid');
         }
@@ -151,11 +157,11 @@ export default function ApplyForm() {
     }
   }
 
-  async function fetchAIResult(sid: string) {
+  async function fetchAIResult(sid: string, fd?: any, l?: string) {
     const res = await fetch(`/api/ai/suggest?submissionId=${sid}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ formData, lang, token: tokenParam }),
+      body: JSON.stringify({ formData: fd ?? formData, lang: l ?? lang, token: tokenParam }),
     });
     if (!res.body) return;
     const reader = res.body.getReader();

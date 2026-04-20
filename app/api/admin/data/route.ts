@@ -41,9 +41,12 @@ export async function POST(request: NextRequest) {
   }
 
   const { count = 1 } = await request.json();
-  const num = Math.min(Math.max(parseInt(count), 1), 50); // 最多一次生成 50 个
+  const num = Math.min(Math.max(parseInt(count), 1), 50);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  // 从请求 host 推断 appUrl，兼容本地和 Vercel
+  const proto = request.headers.get('x-forwarded-proto') || 'http';
+  const host = request.headers.get('host') || 'localhost:3000';
+  const appUrl = `${proto}://${host}`;
   const tokens = [];
 
   for (let i = 0; i < num; i++) {
