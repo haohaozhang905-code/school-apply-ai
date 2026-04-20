@@ -59,9 +59,7 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        controller.close();
-
-        // 流式结束后，await 确保写入完成（Vercel 不保证 fire-and-forget 执行）
+        // 必须在 controller.close() 之前 await，否则 Vercel 关流后立即终止函数
         if (fullContent && submissionId) {
           await Promise.allSettled([
             updateAISuggestion(submissionId, fullContent).catch((err) => {
@@ -74,6 +72,8 @@ export async function POST(request: NextRequest) {
               : Promise.resolve(),
           ]);
         }
+
+        controller.close();
       } catch (error: any) {
         console.error('[AI] Streaming error:', error);
         const errMsg = lang === 'zh'

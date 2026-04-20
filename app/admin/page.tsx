@@ -268,9 +268,9 @@ export default function AdminPage() {
                         {statusLabel(t.status)}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-gray-500">{new Date(t.created_at).toLocaleString('zh-CN')}</td>
-                    <td className="px-5 py-3 text-gray-500">{new Date(t.expires_at).toLocaleDateString('zh-CN')}</td>
-                    <td className="px-5 py-3 text-gray-400">{t.used_at ? new Date(t.used_at).toLocaleString('zh-CN') : '-'}</td>
+                    <td className="px-5 py-3 text-gray-500">{new Date(t.created_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</td>
+                    <td className="px-5 py-3 text-gray-500">{new Date(t.expires_at).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })}</td>
+                    <td className="px-5 py-3 text-gray-400">{t.used_at ? new Date(t.used_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) : '-'}</td>
                   </tr>
                 ))}
                 {tokens.length === 0 && (
@@ -306,7 +306,7 @@ export default function AdminPage() {
                     <td className="px-5 py-3 text-gray-500">{s.target_major || '-'}</td>
                     <td className="px-5 py-3 text-gray-500">{s.degree_type || '-'}</td>
                     <td className="px-5 py-3 text-gray-400">{s.form_language === 'zh' ? '中文' : 'EN'}</td>
-                    <td className="px-5 py-3 text-gray-400">{new Date(s.submitted_at).toLocaleString('zh-CN')}</td>
+                    <td className="px-5 py-3 text-gray-400">{new Date(s.submitted_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}</td>
                     <td className="px-5 py-3">
                       {s.ai_suggestion
                         ? <span className="text-green-600 text-xs">已生成</span>
