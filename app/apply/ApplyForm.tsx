@@ -56,6 +56,7 @@ export default function ApplyForm() {
   const [historyFormData, setHistoryFormData] = useState<FormData | null>(null); // 历史已提交的表单数据
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [stepError, setStepError] = useState(''); // 步骤校验错误提示
 
   const text = t[lang];
 
@@ -97,6 +98,35 @@ export default function ApplyForm() {
 
   function updateForm(patch: Partial<FormData>) {
     setFormData((prev) => ({ ...prev, ...patch }));
+    setStepError(''); // 用户修改后清除错误提示
+  }
+
+  // 每步必填校验
+  function validateStep(s: number): string {
+    const isZh = lang === 'zh';
+    if (s === 1) {
+      if (!formData.studentName.trim()) return isZh ? '请填写姓名' : 'Name is required';
+      if (!formData.currentSchool.trim()) return isZh ? '请填写当前就读学校' : 'Current school is required';
+      if (!formData.intendedIntakeTime.trim()) return isZh ? '请填写计划入学时间' : 'Intended intake time is required';
+      if (!formData.email.trim()) return isZh ? '请填写邮箱' : 'Email is required';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return isZh ? '邮箱格式不正确' : 'Invalid email format';
+    }
+    if (s === 2) {
+      if (!formData.gpa || formData.gpa <= 0) return isZh ? '请填写 GPA' : 'GPA is required';
+      if ((formData.stage === 'undergraduate' || formData.stage === 'graduate') && !formData.currentMajor?.trim())
+        return isZh ? '请填写当前专业' : 'Current major is required';
+    }
+    if (s === 3) {
+      if (!formData.targetMajor.trim()) return isZh ? '请填写目标专业' : 'Target major is required';
+    }
+    return '';
+  }
+
+  function handleNext() {
+    const err = validateStep(step);
+    if (err) { setStepError(err); return; }
+    setStepError('');
+    setStep((s) => s + 1);
   }
 
   async function handleSubmit() {
@@ -168,7 +198,9 @@ export default function ApplyForm() {
 
   // 结果页
   if (step === 5) {
-    return <ResultView lang={lang} aiResult={aiResult} text={text} historyFormData={historyFormData} />;
+    // 首次提交用当前 formData；历史记录用 historyFormData
+    const displayFormData = historyFormData ?? formData;
+    return <ResultView lang={lang} aiResult={aiResult} text={text} submittedFormData={displayFormData} />;
   }
 
   // 欢迎页
@@ -244,19 +276,22 @@ export default function ApplyForm() {
         <div className="flex gap-3">
           {step > 1 && (
             <button
-              onClick={() => setStep((s) => s - 1)}
+              onClick={() => { setStepError(''); setStep((s) => s - 1); }}
               className="flex-1 border border-gray-200 text-gray-600 py-3 rounded-xl font-medium hover:bg-gray-50 transition"
             >
               {text.prev}
             </button>
           )}
           {step < TOTAL_STEPS ? (
-            <button
-              onClick={() => setStep((s) => s + 1)}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
-            >
-              {text.next}
-            </button>
+            <div className="flex-1 flex flex-col gap-1">
+              {stepError && <p className="text-red-500 text-xs text-center">{stepError}</p>}
+              <button
+                onClick={handleNext}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
+              >
+                {text.next}
+              </button>
+            </div>
           ) : (
             <button
               onClick={handleSubmit}

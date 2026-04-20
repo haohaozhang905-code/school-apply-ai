@@ -9,7 +9,7 @@ interface Props {
   lang: Lang;
   aiResult: string;
   text: any;
-  historyFormData?: FormData | null;
+  submittedFormData?: FormData | null;
 }
 
 const mdComponents = {
@@ -75,7 +75,7 @@ function FormSummary({ fd, lang }: { fd: FormData; lang: Lang }) {
   );
 }
 
-export default function ResultView({ lang, aiResult, text, historyFormData }: Props) {
+export default function ResultView({ lang, aiResult, text, submittedFormData }: Props) {
   const [copied, setCopied] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
@@ -99,8 +99,8 @@ export default function ResultView({ lang, aiResult, text, historyFormData }: Pr
           <h1 className="text-2xl font-bold text-gray-800">{text.resultTitle}</h1>
         </div>
 
-        {/* 查看填写内容（仅历史记录有 historyFormData） */}
-        {historyFormData && (
+        {/* 查看填写内容（始终展示） */}
+        {submittedFormData && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
             <button
               onClick={() => setShowForm((v) => !v)}
@@ -109,7 +109,7 @@ export default function ResultView({ lang, aiResult, text, historyFormData }: Pr
               <span>{lang === 'zh' ? '查看填写内容' : 'View Submitted Form'}</span>
               <span className="text-gray-400">{showForm ? '▲' : '▼'}</span>
             </button>
-            {showForm && <FormSummary fd={historyFormData} lang={lang} />}
+            {showForm && <FormSummary fd={submittedFormData} lang={lang} />}
           </div>
         )}
 
